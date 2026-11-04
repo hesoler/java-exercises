@@ -10,9 +10,10 @@ public class ProcesadorPagos {
     Map<String, BigDecimal> totalPorCuenta = new HashMap<>();
 
     // ordenar la lista de transacciones por timestamp descendente
-    transactionList.sort(Comparator.comparing(Transaction::getTimestamp).reversed());
+    List<Transaction> mutableList = new ArrayList<>(transactionList);
+    mutableList.sort(Comparator.comparing(Transaction::getTimestamp, Comparator.nullsLast(Comparator.reverseOrder())).reversed());
 
-    for (Transaction t : transactionList) {
+    for (Transaction t : mutableList) {
       if (t == null || t.getTransactionId() == null || t.getAccountId() == null
           || t.getAmount() == null || t.getStatus() == null) {
         continue; // Manejar transacciones nulas
