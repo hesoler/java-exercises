@@ -9,21 +9,24 @@ public class ProcesadorPagos {
     Set<String> seenTransactionIds = new HashSet<>();
     Map<String, BigDecimal> totalPorCuenta = new HashMap<>();
 
-    try {
-      for (Transaction t : transactionList) {
-        // filtrar duplicados por transactionId
-        if (!seenTransactionIds.add(t.getTransactionId())) {
-          continue;
-        }
-        // excluir fallidas
-        if ("FAILED".equals(t.getStatus())) {
-          continue;
-        }
-        //  Calcular el monto total (BigDecimal) procesado por cada accountId.
-        totalPorCuenta.merge(t.getAccountId(), t.getAmount(), BigDecimal::add);
+    // ordenar la lista de transacciones por timestamp descendente
+    transactionList.sort(Comparator.comparing(Transaction::getTimestamp).reversed());
+
+    for (Transaction t : transactionList) {
+      if (t == null || t.getTransactionId() == null || t.getAccountId() == null
+          || t.getAmount() == null || t.getStatus() == null) {
+        continue; // Manejar transacciones nulas
       }
-    } catch (NullPointerException e) {
-      System.err.println("Error al procesar los pagos: " + e.getMessage());
+      // filtrar duplicados por transactionId
+      if (!seenTransactionIds.add(t.getTransactionId())) {
+        continue;
+      }
+      // excluir fallidas
+      if ("FAILED".equals(t.getStatus())) {
+        continue;
+      }
+      //  Calcular el monto total (BigDecimal) procesado por cada accountId.
+      totalPorCuenta.merge(t.getAccountId(), t.getAmount(), BigDecimal::add);
     }
 
     return totalPorCuenta;
